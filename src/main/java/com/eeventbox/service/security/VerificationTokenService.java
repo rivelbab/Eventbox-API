@@ -5,11 +5,10 @@ package com.eeventbox.service.security;
  * Created by Rivelbab on 26/10/2019 at Nanterre U.
  * ================================================
  */
-
-import com.eeventbox.payload.response.ResponseMessage;
+import org.springframework.http.ResponseEntity;
 
 public interface VerificationTokenService {
 
 	void createVerification(String email);
-	ResponseMessage verifyEmail(String token);
+	ResponseEntity<?> verifyEmail(String token);
 }

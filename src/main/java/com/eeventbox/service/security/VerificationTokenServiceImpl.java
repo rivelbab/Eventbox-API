@@ -2,29 +2,28 @@ package com.eeventbox.service.security;
 
 import com.eeventbox.model.security.VerificationToken;
 import com.eeventbox.model.user.User;
-import com.eeventbox.payload.response.ResponseMessage;
-import com.eeventbox.payload.response.ResponseType;
+import com.eeventbox.payload.response.ApiResponse;
 import com.eeventbox.repository.UserRepository;
 import com.eeventbox.repository.VerificationTokenRepository;
 import com.eeventbox.service.mail.SendingMailService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 
 @Service
 public class VerificationTokenServiceImpl implements VerificationTokenService{
 
-	private UserRepository userRepository;
-	private VerificationTokenRepository verificationTokenRepository;
-	private SendingMailService sendingMailService;
-
 	@Autowired
-	public VerificationTokenServiceImpl(UserRepository userRepository, VerificationTokenRepository verificationTokenRepository, SendingMailService sendingMailService){
-		this.userRepository = userRepository;
-		this.verificationTokenRepository = verificationTokenRepository;
-		this.sendingMailService = sendingMailService;
-	}
+	private UserRepository userRepository;
+	@Autowired
+	private VerificationTokenRepository verificationTokenRepository;
+	@Autowired
+	private SendingMailService sendingMailService;
 
 	public void createVerification(String email) {
 
@@ -47,16 +46,16 @@ public class VerificationTokenServiceImpl implements VerificationTokenService{
 		sendingMailService.sendVerificationMail(email, verificationToken.getToken());
 	}
 
-	public ResponseMessage verifyEmail(String token) {
+	public ResponseEntity<?> verifyEmail(String token) {
 
 		VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
 
 		if (verificationToken == null) {
-			return ResponseMessage.builder().message("Invalid token !").type(ResponseType.CLIENT_ERROR).build();
+			return new ResponseEntity(new ApiResponse(false, "Invalid token !"), HttpStatus.BAD_REQUEST);
 		}
 
 		if (verificationToken.getExpiredDateTime().isBefore(LocalDateTime.now())) {
-			return ResponseMessage.builder().message("expired token !").type(ResponseType.CLIENT_ERROR).build();
+			return new ResponseEntity(new ApiResponse(false, "Expired token !"), HttpStatus.BAD_REQUEST);
 		}
 
 		verificationToken.setConfirmedDateTime(LocalDateTime.now());
@@ -64,6 +63,10 @@ public class VerificationTokenServiceImpl implements VerificationTokenService{
 		verificationToken.getUser().setActive(true);
 		verificationTokenRepository.save(verificationToken);
 
-		return ResponseMessage.builder().message("You have successfully verified your mail address.").type(ResponseType.SUCCESSFUL).build();
+		URI location = ServletUriComponentsBuilder
+				.fromCurrentContextPath().path("/api/users/{username}")
+				.buildAndExpand(verificationToken.getUser().getUsername()).toUri();
+
+		return ResponseEntity.created(location).body(new ApiResponse(true, "You are successfully verify your email."));
 	}
 }

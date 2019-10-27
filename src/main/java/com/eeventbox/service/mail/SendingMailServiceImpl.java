@@ -54,7 +54,7 @@ public class SendingMailServiceImpl implements SendingMailService {
 			props.put("mail.transport.protocol", "smtp");
 			props.put("mail.smtp.port", mailProperties.getSmtp().getPort());
 			props.put("mail.smtp.starttls.enable", "true");
-			props.put("mail.smtp.auth", "true");
+			props.put("mail.smtp.security", "true");
 
 			Session session = Session.getDefaultInstance(props);
 			session.setDebug(true);
