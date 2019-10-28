@@ -10,6 +10,4 @@ import org.springframework.http.ResponseEntity;
 
 public interface UserService {
 
-	ResponseEntity<?> addUser(RegisterRequest rq);
-
 }
