@@ -1,6 +1,6 @@
 Hi !<br/>
 
-Thanks for using Eeventbox ! Please confirm your email address by clicking on the link below.<br/>
+Thanks for using Eeventbox ! ${EMAIL_MESSAGE} by clicking on the link below.<br/>
 
 ${VERIFICATION_URL}<br/>
 

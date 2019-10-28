@@ -5,8 +5,10 @@ package com.eeventbox.service.security;
  * Created by Rivelbab on 26/10/2019 at Nanterre U.
  * ================================================
  */
+import com.eeventbox.payload.security.ForgotPasswordRequest;
 import com.eeventbox.payload.security.LoginRequest;
 import com.eeventbox.payload.security.RegisterRequest;
+import com.eeventbox.payload.security.ResetPasswordRequest;
 import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
@@ -15,11 +17,9 @@ public interface AuthService {
 
 	ResponseEntity<?> login(LoginRequest lq);
 
-	ResponseEntity<?> resetPassword (String resetToken, String pwd);
+	ResponseEntity<?> resetPassword (ResetPasswordRequest rp);
 
-	ResponseEntity<?> forgotPassword (String email);
-
-	void createVerification(String email);
+	ResponseEntity<?> forgotPassword (ForgotPasswordRequest fq);
 
 	ResponseEntity<?> verifyEmail(String token);
 }

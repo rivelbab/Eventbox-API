@@ -30,15 +30,15 @@ public class SendingMailServiceImpl implements SendingMailService {
 		this.templates = templates;
 	}
 
-	public boolean sendVerificationMail(String toEmail, String verificationCode) {
+	public boolean sendVerificationMail(String toEmail, String verifUrl, String subject,  String emailMsg) {
 
-		String subject = "Please verify your mail";
 		String body = "";
 
 		try {
-			Template t = templates.getTemplate("email-verification.ftl");
+			Template t = templates.getTemplate("custom-user-email-verification.ftl");
 			Map<String, String> map = new HashMap<>();
-			map.put("VERIFICATION_URL", mailProperties.getVerificationapi() + verificationCode);
+			map.put("VERIFICATION_URL", verifUrl);
+			map.put("EMAIL_MESSAGE", emailMsg);
 			body = FreeMarkerTemplateUtils.processTemplateIntoString(t, map);
 
 		} catch (Exception ex) {
@@ -49,6 +49,7 @@ public class SendingMailServiceImpl implements SendingMailService {
 	}
 
 	private boolean sendMail(String toEmail, String subject, String body) {
+
 		try {
 			Properties props = System.getProperties();
 			props.put("mail.transport.protocol", "smtp");

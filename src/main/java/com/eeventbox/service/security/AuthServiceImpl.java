@@ -6,9 +6,7 @@ import com.eeventbox.model.role.RoleName;
 import com.eeventbox.model.security.VerificationToken;
 import com.eeventbox.model.user.User;
 import com.eeventbox.payload.response.ApiResponse;
-import com.eeventbox.payload.security.JwtAuthResponse;
-import com.eeventbox.payload.security.LoginRequest;
-import com.eeventbox.payload.security.RegisterRequest;
+import com.eeventbox.payload.security.*;
 import com.eeventbox.repository.RoleRepository;
 import com.eeventbox.repository.UserRepository;
 import com.eeventbox.repository.VerificationTokenRepository;
@@ -34,6 +32,9 @@ import java.util.UUID;
 @Service
 public class AuthServiceImpl implements AuthService {
 
+	private static final String FORGOT_PASSWORD_VERIF_URL = "http://localhost:5005/v1/auth/reset_password?code=";
+	private static final String REGISTER_VERIF_URL = "http://localhost:5005/v1/auth/verify_email?code=";
+
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
@@ -46,10 +47,14 @@ public class AuthServiceImpl implements AuthService {
 	private PasswordEncoder passwordEncoder;
 	@Autowired
 	AuthenticationManager authenticationManager;
-
 	@Autowired
 	JwtTokenProvider tokenProvider;
 
+	/**
+	 * =================================================
+	 * 				register a new user
+	 * =================================================
+	 */
 	public ResponseEntity<?> register(RegisterRequest rq) {
 
 		if (userRepository.existsByEmail(rq.getEmail())) {
@@ -70,7 +75,20 @@ public class AuthServiceImpl implements AuthService {
 
 		User savedUser = userRepository.save(user);
 
-		createVerification(user.getEmail());
+		// ============ prepare user email verification =======
+		VerificationToken verificationToken = verificationTokenRepository.findByUserEmail(user.getEmail());
+
+		if (verificationToken == null) {
+			verificationToken = new VerificationToken();
+			verificationToken.setUser(user);
+			verificationTokenRepository.save(verificationToken);
+		}
+
+		String subject = "Verify four email";
+		String verifUrl = REGISTER_VERIF_URL + verificationToken.getToken();
+		String emailMsg = "Please ! Confirm your account ";
+
+		sendingMailService.sendVerificationMail(user.getEmail(), verifUrl, subject, emailMsg);
 
 		URI location = ServletUriComponentsBuilder
 				.fromCurrentContextPath().path("/v1/users/{username}")
@@ -78,7 +96,11 @@ public class AuthServiceImpl implements AuthService {
 
 		return ResponseEntity.created(location).body(new ApiResponse(true, "Success, Please check your mail to confirm your account."));
 	}
-
+	/**
+	 * =================================================
+	 * 				user login
+	 * =================================================
+	 */
 	public ResponseEntity<?> login(LoginRequest lq) {
 
 		Authentication authentication = authenticationManager.authenticate(
@@ -94,26 +116,39 @@ public class AuthServiceImpl implements AuthService {
 
 		return ResponseEntity.ok(new JwtAuthResponse(jwt));
 	}
+	/**
+	 * =================================================
+	 * 				user password forgot
+	 * =================================================
+	 */
+	public ResponseEntity<?> forgotPassword (ForgotPasswordRequest fq) {
 
-	public ResponseEntity<?> forgotPassword (String email) {
-
-		if (!userRepository.existsByEmail(email)) {
+		if (!userRepository.existsByEmail(fq.getEmail())) {
 			return new ResponseEntity(new ApiResponse(false, "We didn't find an account for that e-mail address."), HttpStatus.BAD_REQUEST);
 		}
 
-		User user = userRepository.findByEmail(email);
+		User user = userRepository.findByEmail(fq.getEmail());
 
 		user.setResetToken(UUID.randomUUID().toString());
 		userRepository.save(user);
 
-		sendingMailService.sendVerificationMail(email, user.getResetToken());
+		// ======== prepare forgot password email =======
+		String subject = "Reset your password";
+		String verifUrl = FORGOT_PASSWORD_VERIF_URL + user.getResetToken();
+		String emailMsg = "Please ! Reset your password";
+
+		sendingMailService.sendVerificationMail(fq.getEmail(), verifUrl, subject, emailMsg);
 
 		return new ResponseEntity(new ApiResponse(true, "A password reset link has been sent to your email"), HttpStatus.OK);
 	}
+	/**
+	 * =================================================
+	 * 				user reset password
+	 * =================================================
+	 */
+	public ResponseEntity<?> resetPassword (ResetPasswordRequest rq) {
 
-	public ResponseEntity<?> resetPassword (String resetToken, String pwd) {
-
-		Optional<User> user = userRepository.findByResetToken(resetToken);
+		Optional<User> user = userRepository.findByResetToken(rq.getToken());
 
 		if (!user.isPresent()) {
 			return new ResponseEntity(new ApiResponse(false, "Oops!  This is an invalid password reset link."), HttpStatus.BAD_REQUEST);
@@ -121,35 +156,18 @@ public class AuthServiceImpl implements AuthService {
 
 		User concernedUser = user.get();
 
-		concernedUser.setPassword(passwordEncoder.encode(pwd));
+		concernedUser.setPassword(passwordEncoder.encode(rq.getPassword()));
 		concernedUser.setResetToken(null);
 
 		userRepository.save(concernedUser);
 
 		return new ResponseEntity(new ApiResponse(true, "You have successfully reset your password.  You may now login."), HttpStatus.OK);
 	}
-
-	public void createVerification(String email) {
-
-		User user = userRepository.findByEmail(email);
-
-		if (user == null) {
-			user = new User();
-			user.setEmail(email);
-			userRepository.save(user);
-		}
-
-		VerificationToken verificationToken = verificationTokenRepository.findByUserEmail(email);
-
-		if (verificationToken == null) {
-			verificationToken = new VerificationToken();
-			verificationToken.setUser(user);
-			verificationTokenRepository.save(verificationToken);
-		}
-
-		sendingMailService.sendVerificationMail(email, verificationToken.getToken());
-	}
-
+	/**
+	 * =================================================
+	 * 				new user verif email
+	 * =================================================
+	 */
 	public ResponseEntity<?> verifyEmail(String token) {
 
 		VerificationToken verificationToken = verificationTokenRepository.findByToken(token);

@@ -5,8 +5,6 @@ package com.eeventbox.service.user;
  * Created by Rivelbab on 26/10/2019 at Nanterre U.
  * ================================================
  */
-import com.eeventbox.payload.security.RegisterRequest;
-import org.springframework.http.ResponseEntity;
 
 public interface UserService {
 
