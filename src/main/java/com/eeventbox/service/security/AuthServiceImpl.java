@@ -67,8 +67,11 @@ public class AuthServiceImpl implements AuthService {
 
 		Role userRole = roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException("User Role not set."));
 
-		User user = new User(rq.getUsername(), rq.getEmail(), rq.getPassword());
+		User user = new User();
 
+		user.setPassword(rq.getPassword());
+		user.setEmail(rq.getEmail());
+		user.setUsername(rq.getUsername());
 		user.setActive(false);
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRoles(Collections.singleton(userRole));
