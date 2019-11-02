@@ -5,6 +5,7 @@ package com.eeventbox.controller;
  * Created by Rivelbab on 26/10/2019 at Nanterre U.
  * ================================================
  */
+import com.eeventbox.repository.UserRepository;
 import com.eeventbox.service.user.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,4 +15,8 @@ public class UserController {
 
 	@Autowired
 	private UserServiceImpl userService;
+	@Autowired
+	private UserRepository userRepository;
+
+
 }

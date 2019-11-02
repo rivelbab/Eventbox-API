@@ -6,10 +6,10 @@ package com.eeventbox.model.user;
  * ================================================
  */
 import com.eeventbox.model.event.Event;
-import com.eeventbox.model.utils.Interest;
-import com.eeventbox.model.role.Role;
+import com.eeventbox.model.utility.AuditModel;
+import com.eeventbox.model.utility.Interest;
 import com.eeventbox.model.security.VerificationToken;
-import com.eeventbox.model.utils.TimeSetting;
+import com.eeventbox.model.utility.TimeSetting;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import javax.persistence.*;
@@ -26,48 +26,57 @@ import java.util.Set;
 @AllArgsConstructor
 @EqualsAndHashCode
 @Entity
-public class User {
+@Table(name = "users")
+public class User extends AuditModel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "user_id")
 	private Integer id;
 
+	// =========== primary infos ========
 	@NotBlank
 	@Size(max = 15)
+	@Column(name = "username")
 	private String username;
-
 	@NotBlank
 	@Email
+	@Column(name = "email")
 	private String email;
-
 	@NotBlank
+	@Column(name = "password")
 	private String password;
 
+	// =========== identity infos ===========
 	@Column(name = "first_name")
 	private String firstName;
-
 	@Column(name = "last_name")
 	private String lastName;
+	@Column(name = "birthday")
+	private String birthday;
+	@Column(name = "phone")
+	private String phone;
 
-	private boolean isActive;
+	/* =========== Auth infos =========== */
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+	private VerificationToken verificationToken;
 
 	@Column(name = "reset_token")
 	private String resetToken;
+	@Column(name = "is_active")
+	private boolean isActive;
 
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<Role> roles = new HashSet<>();
 
-	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-	private VerificationToken verificationToken;
+	/* =========== profile infos ========= */
+	@Column(name = "avatar")
+	private String avatar;
 
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JsonIgnore
 	private Set<Event> adminingEvents;
-
-	private String birthday;
-	private String country;
 
 	@Enumerated(EnumType.STRING)
 	@ElementCollection(targetClass = Interest.class, fetch = FetchType.EAGER)
@@ -80,14 +89,19 @@ public class User {
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JsonIgnore
-	private Set<User> friends = new HashSet<User>();
+	private Set<User> friends = new HashSet<>();
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JsonIgnore
 	private Set<User> pendingFriendRequests = new HashSet<>();
 
 	@OneToOne
+	@JoinTable(name = "time_setting")
 	private TimeSetting timeAvailability;
+
+	private String university;
+
+	/* =========== user actions ============= */
 
 	public void organizeNewEvent(Event event) {
 		if(!adminingEvents.contains(event)){
@@ -113,11 +127,11 @@ public class User {
 		}
 	}
 
-	public void recieveFriendRequestFrom(User user) {
+	public void receiveFriendRequestFrom(User user) {
 		this.pendingFriendRequests.add(user);
 	}
 
 	public void sendFriendRequestTo(User user) {
-		user.recieveFriendRequestFrom(this);
+		user.receiveFriendRequestFrom(this);
 	}
 }

@@ -1,8 +1,18 @@
 package com.eeventbox.model.event;
-
+/**
+ * ================================================================
+ * This model class holds information about event. This includes
+ * data about attendees, start and end time and other relevant
+ * information that can be persisted in DB and also be registered
+ * on the Google Calendar.
+ * Created by Rivel babindamana on 29/10/2019, 15:40 at Paris
+ * ================================================================
+ */
 import com.eeventbox.model.user.User;
-import com.eeventbox.model.utils.Interest;
+import com.eeventbox.model.utility.AuditModel;
+import com.eeventbox.model.utility.Interest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,18 +21,13 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Set;
 
-/**
- * ==============================================================================================================
- * This model class holds information about event. This includes data about attendees, start and end
- * time and other relevant information that can be persisted in DB and also be registered on the Google Calendar.
- * Created by Rivel babindamana on 29/10/2019, 15:40 at Paris
- * ==============================================================================================================
- */
-
 @Getter
 @Setter
 @NoArgsConstructor
-public class Event {
+@AllArgsConstructor
+@Entity
+@Table(name = "events")
+public class Event extends AuditModel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -33,11 +38,16 @@ public class Event {
     private Location location;
     private String title;
     private String description;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+
+    private int likeCount;
+    private int unlikeCount;
+    private int shareCount;
+    private int commentCount;
 
     @ManyToOne
     private User organizer;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
     private Interest category;
@@ -51,6 +61,7 @@ public class Event {
     private Set<User> pendingAttendees;
 
     public void acceptAttendee(User attendee) {
+
         if (pendingAttendees.contains(attendee)) {
             pendingAttendees.remove(attendee);
             this.confirmedAttendees.add(attendee);

@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Getter
 public class UserPrincipal implements UserDetails {
 
-	private Long id;
+	private Integer id;
 
 	private String username;
 

@@ -1,5 +1,6 @@
-package com.eeventbox.model.role;
+package com.eeventbox.model.user;
 
+import com.eeventbox.model.utility.AuditModel;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.NaturalId;
@@ -9,7 +10,7 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "roles")
-public class Role {
+public class Role extends AuditModel {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

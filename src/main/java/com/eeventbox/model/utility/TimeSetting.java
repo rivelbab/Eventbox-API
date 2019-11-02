@@ -1,11 +1,10 @@
-package com.eeventbox.model.utils;
+package com.eeventbox.model.utility;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -15,6 +14,7 @@ import java.util.Map;
 @Setter
 @NoArgsConstructor
 @Entity
+@Table(name = "time_setting")
 public class TimeSetting {
 
     @Id

@@ -1,11 +1,11 @@
 package com.eeventbox.service.security;
 
 import com.eeventbox.exception.AppException;
-import com.eeventbox.model.role.Role;
-import com.eeventbox.model.role.RoleName;
+import com.eeventbox.model.user.Role;
+import com.eeventbox.model.user.RoleName;
 import com.eeventbox.model.security.VerificationToken;
 import com.eeventbox.model.user.User;
-import com.eeventbox.payload.response.ApiResponse;
+import com.eeventbox.payload.api.ApiResponse;
 import com.eeventbox.payload.security.*;
 import com.eeventbox.repository.RoleRepository;
 import com.eeventbox.repository.UserRepository;

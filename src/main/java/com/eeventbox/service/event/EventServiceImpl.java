@@ -20,14 +20,14 @@ public class EventServiceImpl implements EventService {
     @Autowired
     private LocationRepository locationRepository;
 
-    public List<Event> listOfAllEvents() {
+    public List<Event> listAllEvents() {
 
         return eventRepository.findAll();
     }
 
-    public List<Event> listOfPastEvents() {
+    public List<Event> listPastEvents() {
 
-        List<Event> allEvents = listOfAllEvents();
+        List<Event> allEvents = listAllEvents();
         LocalDate today = LocalDate.now();
         List<Event> pastEvents = new ArrayList<>();
 
@@ -40,9 +40,9 @@ public class EventServiceImpl implements EventService {
         return pastEvents;
     }
 
-    public List<Event> listOfFutureEvents(){
+    public List<Event> listFutureEvents(){
 
-        List<Event> allEvents = listOfAllEvents();
+        List<Event> allEvents = listAllEvents();
         LocalDate today = LocalDate.now();
         List<Event> futureEvents = new ArrayList<>();
 
@@ -55,7 +55,7 @@ public class EventServiceImpl implements EventService {
         return futureEvents;
     }
 
-    public void setLocationForEvent(Integer eventId, Integer locationId) {
+    public void setLocationForEvent(Long eventId, Integer locationId) {
 
         if((eventId >= 0) && (locationId >= 0)) {
 

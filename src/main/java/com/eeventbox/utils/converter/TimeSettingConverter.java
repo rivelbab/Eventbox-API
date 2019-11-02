@@ -1,19 +1,25 @@
 package com.eeventbox.utils.converter;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
-import com.eeventbox.model.utils.Days;
-import com.eeventbox.model.utils.TimeSetting;
+import com.eeventbox.model.utility.Days;
+import com.eeventbox.model.utility.TimeSetting;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Map;
 
 /**
+ * ========================================================
  * This class serves as a wrapper for the list of Periods
- * and contains two static utils methods for converting
- * TimeSetting object for binding it with the template
- * or storing into database
+ * and contains two static utility methods for converting
+ * TimeSetting object for storing into database
+ * Created by Rivel Babindamana on 31/10/2019 at Nanterre U.
+ * =========================================================
  */
 
+@Getter
+@Setter
 @Component
 public class TimeSettingConverter {
 
@@ -23,35 +29,29 @@ public class TimeSettingConverter {
 		this.periodsList = new ArrayList<>();
 	}
 
-	public ArrayList<Period> getPeriodsList() {
-		return periodsList;
-	}
-
-	public void setPeriodsList(ArrayList<Period> periodsList) {
-		this.periodsList = periodsList;
-	}
-
-
-	// The method converts TimeSettings object's Map<Days, String>
-	// TimeSettingConverter wrapper, ArrayList<Periods> for displaying into template
 	public static TimeSettingConverter convertForTemplate(TimeSetting timeSetting) {
 
 		TimeSettingConverter periodsWrapper = new TimeSettingConverter();
+
 		Map<Days, String> timeMap = timeSetting.getTimeMap();
 
 		for (Days day : Days.values()) {
+
 			String startEnd = timeMap.get(day);
 			String[] startEndArray = startEnd.split(";");
 			LocalTime start = LocalTime.parse(startEndArray[0]);
 			LocalTime end = LocalTime.parse(startEndArray[1]);
+
 			periodsWrapper.getPeriodsList().add(new Period(start, end));
 		}
 
 		return periodsWrapper;
 	}
 
-	// Method converts TimeSettingConverter object into TimeSetting
-	// after updating time preferences for storing into database
+	/**
+	 * Method converts TimeSettingConverter object into TimeSetting
+	 * after updating time preferences for storing into database
+	 */
 	public static TimeSetting convertForDatabase(TimeSettingConverter periodsWrapper) {
 
 		TimeSetting timeSetting = new TimeSetting();
