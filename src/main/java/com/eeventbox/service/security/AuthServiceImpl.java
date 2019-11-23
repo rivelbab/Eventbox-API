@@ -7,6 +7,7 @@ import com.eeventbox.model.security.VerificationToken;
 import com.eeventbox.model.user.User;
 import com.eeventbox.payload.api.ApiResponse;
 import com.eeventbox.payload.security.*;
+import com.eeventbox.payload.user.UserAvailabilityResponse;
 import com.eeventbox.repository.RoleRepository;
 import com.eeventbox.repository.UserRepository;
 import com.eeventbox.repository.VerificationTokenRepository;
@@ -193,5 +194,21 @@ public class AuthServiceImpl implements AuthService {
 				.buildAndExpand(verificationToken.getUser().getUsername()).toUri();
 
 		return ResponseEntity.created(location).body(new ApiResponse(true, "You are successfully verify your email."));
+	}
+	/**
+	 * ==================================================
+	 * 			User check identity availability
+	 * 	================================================
+	 */
+	public UserAvailabilityResponse checkUsernameAvailability(String username){
+
+		Boolean isAvailable = !userRepository.existsByUsername(username);
+		return new UserAvailabilityResponse(isAvailable);
+	}
+
+	public UserAvailabilityResponse checkEmailAvailability(String email){
+
+		Boolean isAvailable = !userRepository.existsByEmail(email);
+		return new UserAvailabilityResponse(isAvailable);
 	}
 }

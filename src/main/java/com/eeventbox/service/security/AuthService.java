@@ -9,6 +9,7 @@ import com.eeventbox.payload.security.ForgotPasswordRequest;
 import com.eeventbox.payload.security.LoginRequest;
 import com.eeventbox.payload.security.RegisterRequest;
 import com.eeventbox.payload.security.ResetPasswordRequest;
+import com.eeventbox.payload.user.UserAvailabilityResponse;
 import org.springframework.http.ResponseEntity;
 
 public interface AuthService {
@@ -22,4 +23,8 @@ public interface AuthService {
 	ResponseEntity<?> forgotPassword (ForgotPasswordRequest fq);
 
 	ResponseEntity<?> verifyEmail(String token);
+
+	UserAvailabilityResponse checkUsernameAvailability(String username);
+
+	UserAvailabilityResponse checkEmailAvailability(String email);
 }

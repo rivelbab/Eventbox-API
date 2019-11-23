@@ -9,6 +9,7 @@ import com.eeventbox.payload.security.ForgotPasswordRequest;
 import com.eeventbox.payload.security.LoginRequest;
 import com.eeventbox.payload.security.RegisterRequest;
 import com.eeventbox.payload.security.ResetPasswordRequest;
+import com.eeventbox.payload.user.UserAvailabilityResponse;
 import com.eeventbox.service.security.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -51,5 +52,15 @@ public class AuthController {
 	public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest rq) {
 
 		return authService.resetPassword(rq);
+	}
+
+	@GetMapping("/checkUsernameAvailability")
+	public UserAvailabilityResponse checkUsernameAvailability(@RequestParam(value = "username") String username) {
+		return authService.checkUsernameAvailability(username);
+	}
+
+	@GetMapping("/checkEmailAvailability")
+	public UserAvailabilityResponse checkEmailAvailability(@RequestParam(value = "email") String email) {
+		return authService.checkEmailAvailability(email);
 	}
 }
