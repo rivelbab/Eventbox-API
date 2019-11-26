@@ -1,7 +1,7 @@
-package com.eeventbox.payload.response;
+package com.eeventbox.payload.api;
 /**
  * ================================================
- * Contains custom response message and http code
+ * Contains custom api message and http code
  * Created by Rivelbab on 27/10/2019 at Nanterre U.
  * ================================================
  */
