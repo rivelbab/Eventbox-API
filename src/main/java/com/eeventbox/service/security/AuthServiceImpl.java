@@ -7,13 +7,15 @@ import com.eeventbox.model.security.VerificationToken;
 import com.eeventbox.model.user.User;
 import com.eeventbox.payload.api.ApiResponse;
 import com.eeventbox.payload.security.*;
-import com.eeventbox.payload.user.UserAvailabilityResponse;
+import com.eeventbox.payload.security.UserAvailabilityResponse;
+import com.eeventbox.payload.user.UserSummaryResponse;
 import com.eeventbox.repository.RoleRepository;
 import com.eeventbox.repository.UserRepository;
 import com.eeventbox.repository.VerificationTokenRepository;
 import com.eeventbox.service.mail.SendingMailService;
 import com.eeventbox.utils.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,6 +37,8 @@ public class AuthServiceImpl implements AuthService {
 
 	private static final String FORGOT_PASSWORD_VERIF_URL = "http://localhost:5005/v1/auth/reset_password?code=";
 	private static final String REGISTER_VERIF_URL = "http://localhost:5005/v1/auth/verify_email?code=";
+	private static final  String REDIRECT_INVALID_TOKEN_URL = "http://localhost:3005/invalid_token";
+	private static final String REDIRECT_TO_LOGIN_URL = "http://localhost:3005/login";
 
 	@Autowired
 	private UserRepository userRepository;
@@ -59,11 +63,11 @@ public class AuthServiceImpl implements AuthService {
 	public ResponseEntity<?> register(RegisterRequest rq) {
 
 		if (userRepository.existsByEmail(rq.getEmail())) {
-			return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"), HttpStatus.BAD_REQUEST);
+			return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"), HttpStatus.FOUND);
 		}
 
 		if (userRepository.existsByUsername(rq.getUsername())) {
-			return new ResponseEntity(new ApiResponse(false, "Username is already taken!"), HttpStatus.BAD_REQUEST);
+			return new ResponseEntity(new ApiResponse(false, "Username is already taken!"), HttpStatus.FOUND);
 		}
 
 		Role userRole = roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException("User Role not set."));
@@ -117,8 +121,11 @@ public class AuthServiceImpl implements AuthService {
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
 		String jwt = tokenProvider.generateToken(authentication);
+		Long userId = tokenProvider.getUserIdFromJWT(jwt);
+		User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
 
-		return ResponseEntity.ok(new JwtAuthResponse(jwt));
+
+		return ResponseEntity.ok(new UserSummaryResponse(user, jwt));
 	}
 	/**
 	 * =================================================
@@ -177,11 +184,11 @@ public class AuthServiceImpl implements AuthService {
 		VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
 
 		if (verificationToken == null) {
-			return new ResponseEntity(new ApiResponse(false, "Invalid token !"), HttpStatus.BAD_REQUEST);
+			return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION,REDIRECT_INVALID_TOKEN_URL).build();
 		}
 
 		if (verificationToken.getExpiredDateTime().isBefore(LocalDateTime.now())) {
-			return new ResponseEntity(new ApiResponse(false, "Expired token !"), HttpStatus.BAD_REQUEST);
+			return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION,REDIRECT_INVALID_TOKEN_URL).build();
 		}
 
 		verificationToken.setConfirmedDateTime(LocalDateTime.now());
@@ -189,11 +196,7 @@ public class AuthServiceImpl implements AuthService {
 		verificationToken.getUser().setActive(true);
 		verificationTokenRepository.save(verificationToken);
 
-		URI location = ServletUriComponentsBuilder
-				.fromCurrentContextPath().path("/api/users/{username}")
-				.buildAndExpand(verificationToken.getUser().getUsername()).toUri();
-
-		return ResponseEntity.created(location).body(new ApiResponse(true, "You are successfully verify your email."));
+		return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION,REDIRECT_TO_LOGIN_URL).build();
 	}
 	/**
 	 * ==================================================

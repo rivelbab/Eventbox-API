@@ -7,14 +7,17 @@ package com.eeventbox.service.user;
  */
 import com.eeventbox.model.user.User;
 import com.eeventbox.payload.user.UserProfileRequest;
+import com.eeventbox.payload.user.UserProfileResponse;
+import com.eeventbox.payload.user.UserSummaryResponse;
 import org.springframework.http.ResponseEntity;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Set;
 
 public interface UserService {
 
-    ResponseEntity<?> getUserSummary(String username);
+    UserProfileResponse getCurrentUser(HttpServletRequest request);
 
     ResponseEntity<?> showUserProfile(String username);
 

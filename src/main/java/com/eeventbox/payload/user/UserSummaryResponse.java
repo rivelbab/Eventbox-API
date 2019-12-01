@@ -6,10 +6,13 @@ package com.eeventbox.payload.user;
  * ==================================================
  */
 import com.eeventbox.model.user.User;
+import com.eeventbox.model.utility.Interest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.Set;
 
 @Getter
 @Setter
@@ -17,14 +20,22 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UserSummaryResponse {
 
-	private Integer id;
+	private Long id;
 	private String username;
-	private String name;
+	private String email;
+	private Boolean isActive;
+	private Set<Interest> interests;
+	private String accessToken;
+	private String tokenType = "Bearer";
 
-	public UserSummaryResponse(User user) {
+
+	public UserSummaryResponse(User user, String accessToken) {
 
 		this.id = user.getId();
 		this.username = user.getUsername();
-		this.name = user.getFirstName() + " " + user.getLastName();
+		this.email = user.getEmail();
+		this.isActive = user.isActive();
+		this.interests = user.getInterests();
+		this.accessToken = accessToken;
 	}
 }

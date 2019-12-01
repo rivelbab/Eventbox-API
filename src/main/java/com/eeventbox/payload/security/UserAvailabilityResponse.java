@@ -1,4 +1,4 @@
-package com.eeventbox.payload.user;
+package com.eeventbox.payload.security;
 
 public class UserAvailabilityResponse {
 

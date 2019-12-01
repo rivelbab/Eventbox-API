@@ -9,7 +9,7 @@ import com.eeventbox.payload.security.ForgotPasswordRequest;
 import com.eeventbox.payload.security.LoginRequest;
 import com.eeventbox.payload.security.RegisterRequest;
 import com.eeventbox.payload.security.ResetPasswordRequest;
-import com.eeventbox.payload.user.UserAvailabilityResponse;
+import com.eeventbox.payload.security.UserAvailabilityResponse;
 import com.eeventbox.service.security.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

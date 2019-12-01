@@ -21,7 +21,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class UserProfileResponse {
 
-	private Integer id;
+	private Long id;
 	private String username;
 	private String name;
 	private String email;

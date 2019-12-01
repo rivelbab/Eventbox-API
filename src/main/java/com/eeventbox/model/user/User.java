@@ -32,7 +32,7 @@ public class User extends AuditModel {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "user_id")
-	private Integer id;
+	private Long id;
 
 	// =========== primary infos ========
 	@NotBlank

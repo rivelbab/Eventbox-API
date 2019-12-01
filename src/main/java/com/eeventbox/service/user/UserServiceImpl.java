@@ -2,17 +2,27 @@ package com.eeventbox.service.user;
 
 import com.eeventbox.exception.AppException;
 import com.eeventbox.model.user.User;
+import com.eeventbox.model.user.UserPrincipal;
 import com.eeventbox.model.utility.Interest;
 import com.eeventbox.payload.api.ApiResponse;
 import com.eeventbox.payload.user.UserProfileRequest;
 import com.eeventbox.payload.user.UserProfileResponse;
 import com.eeventbox.payload.user.UserSummaryResponse;
 import com.eeventbox.repository.UserRepository;
+import com.eeventbox.service.security.JwtAuthFilter;
+import com.eeventbox.utils.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,18 +33,32 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	AuthenticationManager authenticationManager;
+	@Autowired
+	JwtTokenProvider tokenProvider;
+	@Autowired
+	JwtAuthFilter authFilter;
+	@Autowired
+	CustomUserDetailsService customUserDetailsService;
 
-	public ResponseEntity<?> getUserSummary(String username) {
+	public UserProfileResponse getCurrentUser(HttpServletRequest request) {
 
-		if (!userRepository.existsByUsername(username)) {
-			return new ResponseEntity(new ApiResponse(false, "User don't exist !"), HttpStatus.BAD_REQUEST);
+		String jwt = authFilter.getJwtFromRequest(request);
+		if(StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+			Long userId = tokenProvider.getUserIdFromJWT(jwt);
+			UserDetails userDetails = customUserDetailsService.loadUserById(userId);
+
+			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+			authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+
+			User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
+
+			return new UserProfileResponse(user);
 		}
-
-		User user = userRepository.findByUsername(username);
-
-		UserSummaryResponse userSummaryResponse = new UserSummaryResponse(user);
-
-		return ResponseEntity.ok(userSummaryResponse);
+		return null;
 	}
 
 	public ResponseEntity<?> showUserProfile(String username) {
