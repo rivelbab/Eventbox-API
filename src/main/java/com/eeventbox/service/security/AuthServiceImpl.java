@@ -8,7 +8,7 @@ import com.eeventbox.model.user.User;
 import com.eeventbox.payload.api.ApiResponse;
 import com.eeventbox.payload.security.*;
 import com.eeventbox.payload.security.UserAvailabilityResponse;
-import com.eeventbox.payload.user.UserResponse;
+import com.eeventbox.payload.user.UserSummaryResponse;
 import com.eeventbox.repository.RoleRepository;
 import com.eeventbox.repository.UserRepository;
 import com.eeventbox.repository.VerificationTokenRepository;
@@ -97,7 +97,7 @@ public class AuthServiceImpl implements AuthService {
 	 * 				user login
 	 * =================================================
 	 */
-	public UserResponse login(LoginRequest lq) {
+	public UserSummaryResponse login(LoginRequest lq) {
 
 		Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(
@@ -113,7 +113,7 @@ public class AuthServiceImpl implements AuthService {
 		User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
 
 
-		return new UserResponse(user, jwt);
+		return new UserSummaryResponse(user, jwt);
 	}
 	/**
 	 * =================================================

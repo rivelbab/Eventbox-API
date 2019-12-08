@@ -11,7 +11,7 @@ import java.util.List;
 @Mapper
 public interface UserMapper {
 
-	User asUser(UserRequest userProfile);
+	User asUser(UserRequest userRequest);
 
 	UserRequest asUserRequest(User user);
 

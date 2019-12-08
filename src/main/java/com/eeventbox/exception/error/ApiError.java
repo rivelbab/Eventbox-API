@@ -1,4 +1,4 @@
-package com.eeventbox.utils.error;
+package com.eeventbox.exception.error;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

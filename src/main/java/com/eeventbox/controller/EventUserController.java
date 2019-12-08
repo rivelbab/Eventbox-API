@@ -1,25 +1,27 @@
 package com.eeventbox.controller;
-
-import com.eeventbox.model.event.Event;
-import com.eeventbox.payload.event.EventRequest;
-import com.eeventbox.payload.event.EventResponse;
-import com.eeventbox.service.event.EventUserService;
-import com.eeventbox.service.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-
 /**
  * ================================================
  * Contains all endpoints for the event resources
  * Created by Rivelbab on 29/11/2019 at Nanterre U.
  * ================================================
  */
+import com.eeventbox.model.event.Event;
+import com.eeventbox.payload.event.EventResponse;
+import com.eeventbox.service.event.EventUserService;
+import com.eeventbox.service.user.UserService;
+import com.eeventbox.utils.helper.PatchHelper;
+import com.eeventbox.utils.mapper.EventMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
-@RequestMapping("/v1")
+@RequestMapping("/v1/users/events")
+@RequiredArgsConstructor
 public class EventUserController {
 
 	@Autowired
@@ -27,31 +29,50 @@ public class EventUserController {
 	@Autowired
 	private UserService userService;
 
-	@ResponseBody
-	@GetMapping("/events/{userId}/matchs")
-	public List<Event> getMatchedEventsForUser(@PathVariable("userId") Long userId) {
-		return eventUserService.matchEventsForUser(userId);
-	}
+	private final EventMapper mapper;
 
-	@PostMapping("/events/{eventId}/join")
-	public ResponseEntity<?> joinEvent(@PathVariable("eventId") Long eventId, @RequestParam("userId") Long userId) {
+	private final PatchHelper patchHelper;
+
+	@PostMapping(path = "/{eventId}/join", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Void> joinEvent(@PathVariable Long eventId, @RequestBody Long userId) {
 		eventUserService.joinEvent(userId, eventId);
-		return new ResponseEntity<>(HttpStatus.OK);
+
+		return ResponseEntity.noContent().build();
 	}
 
-	@ResponseBody
-	@GetMapping("events/{userId}/all")
-	public List<Event> listUserEvent(@PathVariable("userId") Long userId) {
-		return eventUserService.listUserEvents(userId);
+	@GetMapping(path = "/{userId}/matchs", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<EventResponse>> matchEvents(@PathVariable Long userId) {
+
+		List<Event> events = eventUserService.matchEventsForUser(userId);
+		List<EventResponse> eventResponses = mapper.asEventResponse(events);
+
+		return  ResponseEntity.ok(eventResponses);
 	}
 
-	@PostMapping("/events")
-	public EventResponse createEvent(@RequestBody EventRequest eventRequest) {
-		return eventUserService.createEvent(eventRequest);
+	@GetMapping(path = "/{userId}/all", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<EventResponse>> findUserEvents(@PathVariable Long userId) {
+
+		List<Event> events = eventUserService.findUserEvents(userId);
+		List<EventResponse> eventResponses = mapper.asEventResponse(events);
+
+		return  ResponseEntity.ok(eventResponses);
 	}
 
-	@GetMapping("/events/{eventId}")
-	public EventResponse showEvent(@PathVariable("eventId") Long eventid) {
-		return eventUserService.getEventById(eventid);
+	@GetMapping(path = "/{userId}/future", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<EventResponse>> findUserFutureEvents(@PathVariable Long userId) {
+
+		List<Event> events = eventUserService.findUserFutureEvents(userId);
+		List<EventResponse> eventResponses = mapper.asEventResponse(events);
+
+		return  ResponseEntity.ok(eventResponses);
+	}
+
+	@GetMapping(path = "/{userId}/past", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<EventResponse>> findUserPastEvents(@PathVariable Long userId) {
+
+		List<Event> events = eventUserService.findUserPastEvents(userId);
+		List<EventResponse> eventResponses = mapper.asEventResponse(events);
+
+		return  ResponseEntity.ok(eventResponses);
 	}
 }

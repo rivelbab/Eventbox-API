@@ -12,10 +12,7 @@ import com.eeventbox.model.user.User;
 import com.eeventbox.model.utility.AuditModel;
 import com.eeventbox.model.utility.Interest;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -25,6 +22,7 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode
 @Entity
 @Table(name = "events")
 public class Event extends AuditModel {
@@ -33,9 +31,7 @@ public class Event extends AuditModel {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "location_id")
-    private Location location;
+    private String location;
     private String title;
     private String description;
     private LocalDateTime startTime;

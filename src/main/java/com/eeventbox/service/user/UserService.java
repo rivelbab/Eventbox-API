@@ -20,5 +20,5 @@ public interface UserService {
 
     void updateUser(User user);
 
-    Boolean deleteUser(String email);
+    Boolean deleteUser(String token);
 }

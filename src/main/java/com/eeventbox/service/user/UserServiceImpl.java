@@ -4,6 +4,7 @@ import com.eeventbox.exception.AppException;
 import com.eeventbox.model.user.User;
 import com.eeventbox.payload.user.UserRequest;
 import com.eeventbox.repository.UserRepository;
+import com.eeventbox.service.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,20 +16,34 @@ public class UserServiceImpl implements UserService{
 
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	JwtTokenProvider tokenProvider;
 
+	/**
+	 * =======================================================
+	 * 	Return list of all user, utils to share event to user
+	 * 	======================================================
+	 */
 	public List<User> findUsers() {
 		return userRepository.findAll();
 	}
-
+	/**
+	 * =============================================================
+	 * 	Return a user of the given username, needed to build profile
+	 * 	============================================================
+	 */
 	public Optional<User> findUserByUsername(String username) {
 
 		return userRepository.findByUsername(username);
 	}
-
+	/**
+	 * =======================================================
+	 * 	Update the entire user entity using PUT Http method
+	 * 	======================================================
+	 */
 	public Boolean updateUser(String username, UserRequest userRequest) {
 
 		if (!userRepository.existsByUsername(username)) {
-			//return new ResponseEntity(new ApiResponse(false, "User don't exist !"), HttpStatus.BAD_REQUEST);
 			return false;
 		}
 
@@ -44,16 +59,24 @@ public class UserServiceImpl implements UserService{
 
 		return true;
 	}
-
+	/**
+	 * ===================================================
+	 * 	Update partially a user using PATCH Http method
+	 * 	==================================================
+	 */
 	public void updateUser(User user) {
 		userRepository.save(user);
 	}
+	/**
+	 * ===================================================================
+	 * 	Delete a user, a token is required to avoid deleting someone else.
+	 * 	==================================================================
+	 */
+	public Boolean deleteUser(String token) {
 
-	public Boolean deleteUser(String email) {
-		if (!userRepository.existsByEmail(email)) {
-			return false;
-		}
-		User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException("User not exist."));
+		Long userId = tokenProvider.getUserIdFromJWT(token);
+		if (!userRepository.existsById(userId)) {return false;}
+		User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
 		userRepository.delete(user);
 		return true;
 	}

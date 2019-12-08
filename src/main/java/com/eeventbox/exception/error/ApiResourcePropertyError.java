@@ -1,4 +1,4 @@
-package com.eeventbox.utils.error;
+package com.eeventbox.exception.error;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,7 @@
 package com.eeventbox.exception;
 
-import com.eeventbox.utils.error.ApiError;
-import com.eeventbox.utils.error.ApiResourcePropertyError;
+import com.eeventbox.exception.error.ApiError;
+import com.eeventbox.exception.error.ApiResourcePropertyError;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 @ControllerAdvice
-public class WebApiExceptionHandler extends ResponseEntityExceptionHandler {
+public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@Override
 	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,

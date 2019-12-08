@@ -11,13 +11,13 @@ import com.eeventbox.payload.security.LoginRequest;
 import com.eeventbox.payload.security.RegisterRequest;
 import com.eeventbox.payload.security.ResetPasswordRequest;
 import com.eeventbox.payload.security.UserAvailabilityResponse;
-import com.eeventbox.payload.user.UserResponse;
+import com.eeventbox.payload.user.UserSummaryResponse;
 
 public interface AuthService {
 
 	ApiResponse register(RegisterRequest rq);
 
-	UserResponse login(LoginRequest lq);
+	UserSummaryResponse login(LoginRequest lq);
 
 	ApiResponse resetPassword (ResetPasswordRequest rp);
 

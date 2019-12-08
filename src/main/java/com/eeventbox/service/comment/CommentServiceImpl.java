@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -39,26 +38,26 @@ public class CommentServiceImpl implements CommentService {
 		comment.setContent(commentRequest.getContent());
 		comment.setAuthor(author);
 		comment.setEvent(event);
+		commentRepository.save(comment);
 
 		return comment;
 	}
 
-	public Comment updateComment(CommentRequest commentRequest) {
+	public void updateComment(Long commentId, CommentRequest commentRequest) {
 
 		Event event = eventRepository.findById(commentRequest.getEventId()).orElseThrow(() -> new AppException("Event not exist."));
 		User author = userRepository.findById(commentRequest.getAuthorId()).orElseThrow(() -> new AppException("User not exist."));
-		Comment comment = commentRepository.findById(commentRequest.getId()).orElseThrow(() -> new AppException("Comment not exist."));
+		Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new AppException("Comment not exist."));
 
 		comment.setContent(commentRequest.getContent());
 		comment.setAuthor(author);
 		comment.setEvent(event);
-
-		return comment;
+		commentRepository.save(comment);
 	}
 
-	public void deleteComment(CommentRequest commentRequest) {
+	public void deleteComment(Long commentId, Long eventId) {
 
-		Comment comment = commentRepository.findByIdAndEventId(commentRequest.getId(), commentRequest.getEventId())
+		Comment comment = commentRepository.findByIdAndEventId(commentId, eventId)
 				.orElseThrow(() -> new AppException("Comment not exist."));
 
 		commentRepository.delete(comment);

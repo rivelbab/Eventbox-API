@@ -78,10 +78,10 @@ public class UserController {
 		return ResponseEntity.noContent().build();
 	}
 
-	@DeleteMapping("/{email}")
-	public ResponseEntity<Void> deleteUser(@PathVariable String email) {
+	@DeleteMapping("/{token}")
+	public ResponseEntity<Void> deleteUser(@PathVariable String token) {
 
-		Boolean isDeleteble = userService.deleteUser(email);
+		Boolean isDeleteble = userService.deleteUser(token);
 		if(isDeleteble == false) {
 			return ResponseEntity.notFound().build();
 		}
