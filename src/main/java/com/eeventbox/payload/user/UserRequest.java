@@ -7,17 +7,16 @@ package com.eeventbox.payload.user;
  */
 
 import com.eeventbox.model.utility.Interest;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+
 import java.util.Set;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserProfileRequest {
+public class UserRequest {
 
 	private Long id;
 	private String username;

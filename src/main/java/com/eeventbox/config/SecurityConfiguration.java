@@ -7,7 +7,7 @@ package com.eeventbox.config;
  * ===============================================
  */
 import com.eeventbox.service.user.CustomUserDetailsService;
-import com.eeventbox.utils.security.JwtAuthEntryPoint;
+import com.eeventbox.service.security.JwtAuthEntryPoint;
 import com.eeventbox.service.security.JwtAuthFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

@@ -9,7 +9,6 @@ package com.eeventbox.service.security;
  * ================================================
  */
 import com.eeventbox.service.user.CustomUserDetailsService;
-import com.eeventbox.utils.security.JwtTokenProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

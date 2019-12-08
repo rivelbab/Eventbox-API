@@ -6,32 +6,19 @@ package com.eeventbox.service.user;
  * ================================================
  */
 import com.eeventbox.model.user.User;
-import com.eeventbox.payload.user.UserProfileRequest;
-import com.eeventbox.payload.user.UserProfileResponse;
-import com.eeventbox.payload.user.UserSummaryResponse;
-import org.springframework.http.ResponseEntity;
-
-import javax.servlet.http.HttpServletRequest;
+import com.eeventbox.payload.user.UserRequest;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 public interface UserService {
 
-    UserProfileResponse getCurrentUser(HttpServletRequest request);
+    List<User> findUsers();
 
-    ResponseEntity<?> showUserProfile(String username);
+    Optional<User> findUserByUsername(String username);
 
-    ResponseEntity<?> updateUserProfile(UserProfileRequest upq);
+    Boolean updateUser(String username, UserRequest userRequest);
 
-    List<User> listUsers();
+    void updateUser(User user);
 
-    List<User> getUsersWithCommonInterest(String username);
-
-    void sendFriendRequestTo(String sender, String receiver);
-
-    void receiveFriendRequestFrom(String sender, String receiver);
-
-    void acceptFriend(String sender, String receiver);
-
-    Set<User> getPendingFriendRequests(String username);
+    Boolean deleteUser(String email);
 }

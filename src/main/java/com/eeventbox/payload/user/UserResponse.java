@@ -19,19 +19,21 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserProfileResponse {
+public class UserResponse {
 
 	private Long id;
 	private String username;
 	private String name;
 	private String email;
 	private Boolean isActive;
+	private String accessToken;
+	private String tokenType = "Bearer";
 	private String phone;
 	private Date joinedAt;
 	private Set<Interest> interests;
 	private String university;
 
-	public UserProfileResponse(User user) {
+	public UserResponse(User user) {
 
 		this.id = user.getId();
 		this.username = user.getUsername();
@@ -42,5 +44,19 @@ public class UserProfileResponse {
 		this.joinedAt = user.getCreatedAt();
 		this.interests = user.getInterests();
 		this.university = user.getUniversity();
+	}
+
+	public UserResponse(User user, String accessToken) {
+
+		this.id = user.getId();
+		this.username = user.getUsername();
+		this.name = user.getFirstName() + " " + user.getLastName();
+		this.email = user.getEmail();
+		this.isActive = user.isActive();
+		this.phone = user.getPhone();
+		this.joinedAt = user.getCreatedAt();
+		this.interests = user.getInterests();
+		this.university = user.getUniversity();
+		this.accessToken = accessToken;
 	}
 }

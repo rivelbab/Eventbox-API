@@ -8,25 +8,19 @@ import com.eeventbox.model.user.User;
 import com.eeventbox.payload.api.ApiResponse;
 import com.eeventbox.payload.security.*;
 import com.eeventbox.payload.security.UserAvailabilityResponse;
-import com.eeventbox.payload.user.UserSummaryResponse;
+import com.eeventbox.payload.user.UserResponse;
 import com.eeventbox.repository.RoleRepository;
 import com.eeventbox.repository.UserRepository;
 import com.eeventbox.repository.VerificationTokenRepository;
 import com.eeventbox.service.mail.SendingMailService;
-import com.eeventbox.utils.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Optional;
@@ -37,8 +31,6 @@ public class AuthServiceImpl implements AuthService {
 
 	private static final String FORGOT_PASSWORD_VERIF_URL = "http://localhost:5005/v1/auth/reset_password?code=";
 	private static final String REGISTER_VERIF_URL = "http://localhost:5005/v1/auth/verify_email?code=";
-	private static final  String REDIRECT_INVALID_TOKEN_URL = "http://localhost:3005/invalid_token";
-	private static final String REDIRECT_TO_LOGIN_URL = "http://localhost:3005/login";
 
 	@Autowired
 	private UserRepository userRepository;
@@ -60,14 +52,14 @@ public class AuthServiceImpl implements AuthService {
 	 * 				register a new user
 	 * =================================================
 	 */
-	public ResponseEntity<?> register(RegisterRequest rq) {
+	public ApiResponse register(RegisterRequest rq) {
 
 		if (userRepository.existsByEmail(rq.getEmail())) {
-			return new ResponseEntity(new ApiResponse(false, "Email Address already in use!"), HttpStatus.FOUND);
+			return new ApiResponse(false, "Email Address already in use!");
 		}
 
 		if (userRepository.existsByUsername(rq.getUsername())) {
-			return new ResponseEntity(new ApiResponse(false, "Username is already taken!"), HttpStatus.FOUND);
+			return new ApiResponse(false, "Username is already taken!");
 		}
 
 		Role userRole = roleRepository.findByName(RoleName.ROLE_USER).orElseThrow(() -> new AppException("User Role not set."));
@@ -81,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
 		user.setPassword(passwordEncoder.encode(user.getPassword()));
 		user.setRoles(Collections.singleton(userRole));
 
-		User savedUser = userRepository.save(user);
+		userRepository.save(user);
 
 		// ============ prepare user email verification =======
 		VerificationToken verificationToken = verificationTokenRepository.findByUserEmail(user.getEmail());
@@ -98,18 +90,14 @@ public class AuthServiceImpl implements AuthService {
 
 		sendingMailService.sendVerificationMail(user.getEmail(), verifUrl, subject, emailMsg);
 
-		URI location = ServletUriComponentsBuilder
-				.fromCurrentContextPath().path("/v1/users/{username}")
-				.buildAndExpand(savedUser.getUsername()).toUri();
-
-		return ResponseEntity.created(location).body(new ApiResponse(true, "Success, Please check your mail to confirm your account."));
+		return new ApiResponse(true, "Success, Please check your mail to confirm your account.");
 	}
 	/**
 	 * =================================================
 	 * 				user login
 	 * =================================================
 	 */
-	public ResponseEntity<?> login(LoginRequest lq) {
+	public UserResponse login(LoginRequest lq) {
 
 		Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(
@@ -125,20 +113,20 @@ public class AuthServiceImpl implements AuthService {
 		User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
 
 
-		return ResponseEntity.ok(new UserSummaryResponse(user, jwt));
+		return new UserResponse(user, jwt);
 	}
 	/**
 	 * =================================================
 	 * 				user password forgot
 	 * =================================================
 	 */
-	public ResponseEntity<?> forgotPassword (ForgotPasswordRequest fq) {
+	public ApiResponse forgotPassword (ForgotPasswordRequest fq) {
 
 		if (!userRepository.existsByEmail(fq.getEmail())) {
-			return new ResponseEntity(new ApiResponse(false, "We didn't find an account for that e-mail address."), HttpStatus.BAD_REQUEST);
+			return new ApiResponse(false, "We didn't find an account for that e-mail address.");
 		}
 
-		User user = userRepository.findByEmail(fq.getEmail());
+		User user = userRepository.findByEmail(fq.getEmail()).orElseThrow(() -> new AppException("Email not exist."));;
 
 		user.setResetToken(UUID.randomUUID().toString());
 		userRepository.save(user);
@@ -150,19 +138,19 @@ public class AuthServiceImpl implements AuthService {
 
 		sendingMailService.sendVerificationMail(fq.getEmail(), verifUrl, subject, emailMsg);
 
-		return new ResponseEntity(new ApiResponse(true, "A password reset link has been sent to your email"), HttpStatus.OK);
+		return new ApiResponse(true, "A password reset link has been sent to your email");
 	}
 	/**
 	 * =================================================
 	 * 				user reset password
 	 * =================================================
 	 */
-	public ResponseEntity<?> resetPassword (ResetPasswordRequest rq) {
+	public ApiResponse resetPassword (ResetPasswordRequest rq) {
 
 		Optional<User> user = userRepository.findByResetToken(rq.getToken());
 
 		if (!user.isPresent()) {
-			return new ResponseEntity(new ApiResponse(false, "Oops!  This is an invalid password reset link."), HttpStatus.BAD_REQUEST);
+			return new ApiResponse(false, "Oops!  This is an invalid password reset link.");
 		}
 
 		User concernedUser = user.get();
@@ -172,31 +160,27 @@ public class AuthServiceImpl implements AuthService {
 
 		userRepository.save(concernedUser);
 
-		return new ResponseEntity(new ApiResponse(true, "You have successfully reset your password.  You may now login."), HttpStatus.OK);
+		return new ApiResponse(true, "You have successfully reset your password.  You may now login.");
 	}
 	/**
 	 * =================================================
 	 * 				new user verif email
 	 * =================================================
 	 */
-	public ResponseEntity<?> verifyEmail(String token) {
+	public Boolean verifyEmail(String token) {
 
 		VerificationToken verificationToken = verificationTokenRepository.findByToken(token);
 
-		if (verificationToken == null) {
-			return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION,REDIRECT_INVALID_TOKEN_URL).build();
-		}
+		if (verificationToken == null) { return false; }
 
-		if (verificationToken.getExpiredDateTime().isBefore(LocalDateTime.now())) {
-			return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION,REDIRECT_INVALID_TOKEN_URL).build();
-		}
+		if (verificationToken.getExpiredDateTime().isBefore(LocalDateTime.now())) { return false; }
 
 		verificationToken.setConfirmedDateTime(LocalDateTime.now());
 		verificationToken.setStatus(VerificationToken.STATUS_VERIFIED);
 		verificationToken.getUser().setActive(true);
 		verificationTokenRepository.save(verificationToken);
 
-		return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION,REDIRECT_TO_LOGIN_URL).build();
+		return true;
 	}
 	/**
 	 * ==================================================

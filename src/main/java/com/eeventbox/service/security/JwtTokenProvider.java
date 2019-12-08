@@ -1,4 +1,4 @@
-package com.eeventbox.utils.security;
+package com.eeventbox.service.security;
 /**
  * ==================================================
  * Utility class used for generating a JWT after a
@@ -14,9 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 
 @Component

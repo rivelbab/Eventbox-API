@@ -1,4 +1,4 @@
-package com.eeventbox.utils.security;
+package com.eeventbox.service.security;
 /**
  * ================================================
  * Used to return a 401 unauthorized error to user
