@@ -5,24 +5,25 @@ package com.eeventbox.service.security;
  * Created by Rivelbab on 26/10/2019 at Nanterre U.
  * ================================================
  */
+import com.eeventbox.payload.api.ApiResponse;
 import com.eeventbox.payload.security.ForgotPasswordRequest;
 import com.eeventbox.payload.security.LoginRequest;
 import com.eeventbox.payload.security.RegisterRequest;
 import com.eeventbox.payload.security.ResetPasswordRequest;
-import com.eeventbox.payload.user.UserAvailabilityResponse;
-import org.springframework.http.ResponseEntity;
+import com.eeventbox.payload.security.UserAvailabilityResponse;
+import com.eeventbox.payload.user.UserSummaryResponse;
 
 public interface AuthService {
 
-	ResponseEntity<?> register(RegisterRequest rq);
+	ApiResponse register(RegisterRequest rq);
 
-	ResponseEntity<?> login(LoginRequest lq);
+	UserSummaryResponse login(LoginRequest lq);
 
-	ResponseEntity<?> resetPassword (ResetPasswordRequest rp);
+	ApiResponse resetPassword (ResetPasswordRequest rp);
 
-	ResponseEntity<?> forgotPassword (ForgotPasswordRequest fq);
+	ApiResponse forgotPassword (ForgotPasswordRequest fq);
 
-	ResponseEntity<?> verifyEmail(String token);
+	Boolean verifyEmail(String token);
 
 	UserAvailabilityResponse checkUsernameAvailability(String username);
 

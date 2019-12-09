@@ -1,17 +1,12 @@
 package com.eeventbox.service.event;
 
 import com.eeventbox.exception.AppException;
-import com.eeventbox.model.event.Comment;
 import com.eeventbox.model.user.User;
 import com.eeventbox.model.event.Event;
 import com.eeventbox.model.utility.Days;
 import com.eeventbox.model.utility.Interest;
-import com.eeventbox.payload.event.EventRequest;
-import com.eeventbox.payload.event.EventResponse;
 import com.eeventbox.repository.EventRepository;
 import com.eeventbox.repository.UserRepository;
-
-import com.eeventbox.service.comment.CommentService;
 import com.eeventbox.utils.converter.Period;
 import com.eeventbox.utils.converter.TimeSettingConverter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,48 +26,12 @@ public class EventUserServiceImpl implements EventUserService {
     private EventRepository eventRepository;
     @Autowired
     private EventService eventService;
-    @Autowired
-	private CommentService commentService;
 
-    public EventResponse getEventById(Long eventId) {
-
-		Event event = eventRepository.findById(eventId).orElseThrow(() -> new AppException("Event not set."));
-
-		List<Comment> comments = commentService.listAllEventComments(eventId);
-
-		EventResponse eventResponse = new EventResponse(event);
-		eventResponse.setComments(comments);
-
-		return eventResponse;
-	}
-
-
-	public EventResponse createEvent(EventRequest eventRequest) {
-
-		User organizer = userRepository.findById(eventRequest.getOrganizerId()).orElseThrow(() -> new AppException("User not exist."));
-
-		Event event = new Event();
-		event.setTitle(eventRequest.getTitle());
-		event.setCategory(eventRequest.getCategory());
-		event.setDescription(eventRequest.getDescription());
-		event.setLocation(eventRequest.getLocation());
-		event.setStartTime(eventRequest.getStartTime());
-		event.setEndTime(eventRequest.getEndTime());
-		event.setOrganizer(organizer);
-
-		organizer.organizeNewEvent(event);
-
-		Event newEvent = eventRepository.save(event);
-
-		organizer.getAttendingEvents().add(newEvent);
-
-		userRepository.save(organizer);
-
-		EventResponse eventResponse = new EventResponse(newEvent);
-
-		return eventResponse;
-	}
-
+	/**
+	 * ==========================================================
+	 * 	Join a given event, used to become a event's participant
+	 * 	=========================================================
+	 */
 	public void joinEvent(Long userId, Long eventId) {
 
 		Event event = eventRepository.findById(eventId).orElseThrow(() -> new AppException("Event not set."));
@@ -85,12 +44,17 @@ public class EventUserServiceImpl implements EventUserService {
 		eventRepository.save(event);
 	}
 
+	/**
+	 * ========================================================
+	 * Find all future event that match with the user interests
+	 * ========================================================
+	 */
     public List<Event> matchEventsForUser(Long userId) {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
 
         Set<Interest> interests = user.getInterests();
-        List<Event> futureEvents = eventService.listFutureEvents();
+        List<Event> futureEvents = eventService.findFutureEvents();
 
         List<Period> periods = TimeSettingConverter.convertForTemplate(user.getTimeAvailability()).getPeriodsList();
 
@@ -100,23 +64,35 @@ public class EventUserServiceImpl implements EventUserService {
                     return e.getStartTime().toLocalTime().isAfter(weekDay.getStart()) && e.getEndTime().toLocalTime().isBefore(weekDay.getEnd());
                 }).collect(Collectors.toList());
     }
-
-	public List<Event> listUserEvents(Long userId) {
+	/**
+	 * ==========================================================
+	 * Find all event created by this user, future and past event
+	 * ==========================================================
+	 */
+	public List<Event> findUserEvents(Long userId) {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
 
 		return user.getAttendingEvents();
 	}
-
-	public List<Event> listUserFutureEvents(Long userId) {
+	/**
+	 * ==========================================================
+	 * Find all event created by this user, future event only
+	 * ==========================================================
+	 */
+	public List<Event> findUserFutureEvents(Long userId) {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
 
 		return user.getAttendingEvents().stream().filter(event -> event.getEndTime().isAfter(LocalDateTime.now()))
 				.collect(Collectors.toList());
 	}
-
-	public List<Event> listUserPastEvents(Long userId) {
+	/**
+	 * ==========================================================
+	 * Find all event created by this user, past event only
+	 * ==========================================================
+	 */
+	public List<Event> findUserPastEvents(Long userId) {
 
 		User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
 

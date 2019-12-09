@@ -7,11 +7,12 @@ package com.eeventbox.config;
  * ===============================================
  */
 import com.eeventbox.service.user.CustomUserDetailsService;
-import com.eeventbox.utils.security.JwtAuthEntryPoint;
+import com.eeventbox.service.security.JwtAuthEntryPoint;
 import com.eeventbox.service.security.JwtAuthFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -78,7 +79,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 						"/**/*.css",
 						"/**/*.js")
 				.permitAll()
-				.antMatchers("/v1/auth/*").permitAll()
+				.antMatchers("/v1/auth/**").permitAll()
+				.antMatchers(HttpMethod.GET,"/v1/users/**").permitAll()
 				.anyRequest().authenticated();
 
 		// Add our custom JWT security filter

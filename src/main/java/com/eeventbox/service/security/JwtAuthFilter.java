@@ -9,7 +9,6 @@ package com.eeventbox.service.security;
  * ================================================
  */
 import com.eeventbox.service.user.CustomUserDetailsService;
-import com.eeventbox.utils.security.JwtTokenProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +58,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 		filterChain.doFilter(request, response);
 	}
 
-	private String getJwtFromRequest(HttpServletRequest request) {
+	public String getJwtFromRequest(HttpServletRequest request) {
 
 		String bearerToken = request.getHeader("Authorization");
 

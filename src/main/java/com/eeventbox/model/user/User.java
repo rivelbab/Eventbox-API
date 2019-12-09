@@ -32,7 +32,7 @@ public class User extends AuditModel {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "user_id")
-	private Integer id;
+	private Long id;
 
 	// =========== primary infos ========
 	@NotBlank
@@ -87,14 +87,6 @@ public class User extends AuditModel {
 	@JsonIgnore
 	private List<Event> attendingEvents;
 
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JsonIgnore
-	private Set<User> friends = new HashSet<>();
-
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JsonIgnore
-	private Set<User> pendingFriendRequests = new HashSet<>();
-
 	@OneToOne
 	@JoinTable(name = "time_setting")
 	private TimeSetting timeAvailability;
@@ -118,20 +110,5 @@ public class User extends AuditModel {
 		if(!this.attendingEvents.contains(event)){
 			this.attendingEvents.add(event);
 		}
-	}
-
-	public void acceptFriend(User sender) {
-		if ((sender != null) && pendingFriendRequests.contains(sender)) {
-			pendingFriendRequests.remove(sender);
-			this.friends.add(sender);
-		}
-	}
-
-	public void receiveFriendRequestFrom(User user) {
-		this.pendingFriendRequests.add(user);
-	}
-
-	public void sendFriendRequestTo(User user) {
-		user.receiveFriendRequestFrom(this);
 	}
 }

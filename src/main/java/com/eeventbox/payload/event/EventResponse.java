@@ -22,6 +22,7 @@ public class EventResponse {
 	private Long id;
 	private String title;
 	private String description;
+	private String location;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
 	private Interest category;
@@ -42,6 +43,7 @@ public class EventResponse {
 		this.id = event.getId();
 		this.title = event.getTitle();
 		this.description = event.getDescription();
+		this.location = event.getLocation();
 		this.startTime = event.getStartTime();
 		this.endTime = event.getEndTime();
 		this.category = event.getCategory();

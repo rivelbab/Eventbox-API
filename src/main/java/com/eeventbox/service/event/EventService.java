@@ -1,21 +1,30 @@
 package com.eeventbox.service.event;
 /**
  * ================================================
- * Contains all useful operations for all Users
+ * Contains all methods to deal with events resources
  * Created by Rivelbab on 26/10/2019 at Nanterre U.
  * ================================================
  */
 import com.eeventbox.model.event.Event;
+import com.eeventbox.payload.event.EventRequest;
+import com.eeventbox.payload.event.EventResponse;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface EventService {
 
-    List<Event> listAllEvents();
+    EventResponse findEvent(Long eventId);
 
-    List<Event> listPastEvents();
+    Optional<Event> findEventById(Long eventId);
 
-    List<Event> listFutureEvents();
+    Event createEvent(EventRequest eventRequest);
 
-    void setLocationForEvent(Long eventId, Integer locationId);
+    void updateEvent(Event event);
+
+    List<Event> findPastEvents();
+
+    List<Event> findFutureEvents();
+
+    List<Event> findEvents();
 }

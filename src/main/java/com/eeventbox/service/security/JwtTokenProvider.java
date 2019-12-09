@@ -1,4 +1,4 @@
-package com.eeventbox.utils.security;
+package com.eeventbox.service.security;
 /**
  * ==================================================
  * Utility class used for generating a JWT after a

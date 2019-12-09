@@ -1,6 +1,5 @@
 package com.eeventbox.payload.event;
 
-import com.eeventbox.model.event.Location;
 import com.eeventbox.model.utility.Interest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,5 +20,5 @@ public class EventRequest {
 	private LocalDateTime endTime;
 	private Interest category;
 	private Long organizerId;
-	private Location location;
+	private String location;
 }
