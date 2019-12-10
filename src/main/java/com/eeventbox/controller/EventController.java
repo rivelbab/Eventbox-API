@@ -94,4 +94,47 @@ public class EventController {
 
 		return ResponseEntity.ok(eventResponses);
 	}
+
+	@PostMapping(path = "/{eventId}/join", consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Void> joinEvent(@PathVariable Long eventId, @RequestBody Long userId) {
+		eventService.joinEvent(userId, eventId);
+
+		return ResponseEntity.noContent().build();
+	}
+
+	@GetMapping(path = "/{userId}/matchs", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<EventResponse>> matchEvents(@PathVariable Long userId) {
+
+		List<Event> events = eventService.matchEventsForUser(userId);
+		List<EventResponse> eventResponses = mapper.asEventResponse(events);
+
+		return  ResponseEntity.ok(eventResponses);
+	}
+
+	@GetMapping(path = "/{userId}/all", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<EventResponse>> findUserEvents(@PathVariable Long userId) {
+
+		List<Event> events = eventService.findUserEvents(userId);
+		List<EventResponse> eventResponses = mapper.asEventResponse(events);
+
+		return  ResponseEntity.ok(eventResponses);
+	}
+
+	@GetMapping(path = "/{userId}/future", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<EventResponse>> findUserFutureEvents(@PathVariable Long userId) {
+
+		List<Event> events = eventService.findUserFutureEvents(userId);
+		List<EventResponse> eventResponses = mapper.asEventResponse(events);
+
+		return  ResponseEntity.ok(eventResponses);
+	}
+
+	@GetMapping(path = "/{userId}/past", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<EventResponse>> findUserPastEvents(@PathVariable Long userId) {
+
+		List<Event> events = eventService.findUserPastEvents(userId);
+		List<EventResponse> eventResponses = mapper.asEventResponse(events);
+
+		return  ResponseEntity.ok(eventResponses);
+	}
 }

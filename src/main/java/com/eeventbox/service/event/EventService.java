@@ -20,11 +20,21 @@ public interface EventService {
 
     Event createEvent(EventRequest eventRequest);
 
-    void updateEvent(Event event);
-
     List<Event> findPastEvents();
 
     List<Event> findFutureEvents();
 
     List<Event> findEvents();
+
+    void updateEvent(Event event);
+
+    void joinEvent(Long userId, Long eventId);
+
+    List<Event> matchEventsForUser(Long userId);
+
+    List<Event> findUserEvents(Long userId);
+
+    List<Event> findUserFutureEvents(Long userId);
+
+    List<Event> findUserPastEvents(Long userId);
 }
