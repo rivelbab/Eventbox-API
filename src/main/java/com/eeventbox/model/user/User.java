@@ -24,7 +24,6 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
 @Entity
 @Table(name = "users")
 public class User extends AuditModel {
@@ -56,6 +55,8 @@ public class User extends AuditModel {
 	private String birthday;
 	@Column(name = "phone")
 	private String phone;
+	private String ufr;
+	private int sex;
 
 	/* =========== Auth infos =========== */
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
@@ -90,8 +91,6 @@ public class User extends AuditModel {
 	@OneToOne
 	@JoinTable(name = "time_setting")
 	private TimeSetting timeAvailability;
-
-	private String university;
 
 	/* =========== user actions ============= */
 

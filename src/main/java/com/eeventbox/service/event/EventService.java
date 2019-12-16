@@ -6,11 +6,15 @@ package com.eeventbox.service.event;
  * ================================================
  */
 import com.eeventbox.model.event.Event;
+import com.eeventbox.model.utility.Interest;
 import com.eeventbox.payload.event.EventRequest;
 import com.eeventbox.payload.event.EventResponse;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface EventService {
 
@@ -18,7 +22,11 @@ public interface EventService {
 
     Optional<Event> findEventById(Long eventId);
 
-    Event createEvent(EventRequest eventRequest);
+    Event createEvent(MultipartFile file, EventRequest eventRequest);
+
+    Event createEvent(MultipartFile file, String title, String desc, String location, LocalDateTime startTime, LocalDateTime endTime, Set<Interest> category, Long organizerId );
+
+    void addEventImage(MultipartFile file, Long eventId);
 
     List<Event> findPastEvents();
 

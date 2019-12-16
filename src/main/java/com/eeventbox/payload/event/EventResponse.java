@@ -4,10 +4,7 @@ import com.eeventbox.model.event.Comment;
 import com.eeventbox.model.event.Event;
 import com.eeventbox.model.user.User;
 import com.eeventbox.model.utility.Interest;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,9 +20,11 @@ public class EventResponse {
 	private String title;
 	private String description;
 	private String location;
+	private String imageName;
+	private String imageUri;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
-	private Interest category;
+	private Set<Interest> category;
 	private User organizer;
 
 	private int likeCount;
@@ -54,5 +53,7 @@ public class EventResponse {
 		this.commentCount = event.getCommentCount();
 		this.confirmedAttendees = event.getConfirmedAttendees();
 		this.pendingAttendees = event.getPendingAttendees();
+		this.imageName = event.getImageName();
+		this.imageUri = event.getImageUri();
 	}
 }

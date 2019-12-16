@@ -31,7 +31,8 @@ public class UserResponse {
 	private String phone;
 	private Date joinedAt;
 	private Set<Interest> interests;
-	private String university;
+	private String ufr;
+	private int sex;
 
 	public UserResponse(User user) {
 
@@ -43,7 +44,8 @@ public class UserResponse {
 		this.phone = user.getPhone();
 		this.joinedAt = user.getCreatedAt();
 		this.interests = user.getInterests();
-		this.university = user.getUniversity();
+		this.ufr = user.getUfr();
+		this.sex = user.getSex();
 	}
 
 	public UserResponse(User user, String accessToken) {
@@ -56,7 +58,8 @@ public class UserResponse {
 		this.phone = user.getPhone();
 		this.joinedAt = user.getCreatedAt();
 		this.interests = user.getInterests();
-		this.university = user.getUniversity();
+		this.ufr = user.getUfr();
+		this.sex = user.getSex();
 		this.accessToken = accessToken;
 	}
 }

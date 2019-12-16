@@ -7,5 +7,18 @@ package com.eeventbox.model.utility;
  */
 public enum  Interest {
 
-    SPORT, BUSINESS, MOVIES, NATURE, PARTY, DANCE, ART
+    SPORT,
+    BUSINESS,
+    MOVIES,
+    NATURE,
+    PARTY,
+    DANCE,
+    ART,
+    LANGUAGES,
+    CONFERENCE,
+    EDUCATION,
+    SOCIAL,
+    TRAVEL,
+    MUSIC,
+    DEBAT
 }

@@ -11,10 +11,13 @@ import com.eeventbox.payload.event.EventResponse;
 import com.eeventbox.repository.EventRepository;
 import com.eeventbox.repository.UserRepository;
 import com.eeventbox.service.comment.CommentService;
+import com.eeventbox.service.file.FileStorageService;
 import com.eeventbox.utils.converter.Period;
 import com.eeventbox.utils.converter.TimeSettingConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,6 +36,8 @@ public class EventServiceImpl implements EventService {
     private CommentService commentService;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private FileStorageService fileStorageService;
 
     /**
      *==========================================================
@@ -63,7 +68,10 @@ public class EventServiceImpl implements EventService {
      * 				Create a new event
      *==========================================================
      */
-    public Event createEvent(EventRequest eventRequest) {
+    public Event createEvent(MultipartFile file, EventRequest eventRequest) {
+
+        String fileName = fileStorageService.storeFile(file);
+        String fileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").path(fileName).toUriString();
 
         User organizer = userRepository.findById(eventRequest.getOrganizerId()).orElseThrow(() -> new AppException("User not exist."));
 
@@ -75,6 +83,8 @@ public class EventServiceImpl implements EventService {
         event.setStartTime(eventRequest.getStartTime());
         event.setEndTime(eventRequest.getEndTime());
         event.setOrganizer(organizer);
+        event.setImageName(fileName);
+        event.setImageUri(fileUri);
 
         organizer.organizeNewEvent(event);
 
@@ -85,6 +95,51 @@ public class EventServiceImpl implements EventService {
         userRepository.save(organizer);
 
         return newEvent;
+    }
+
+    public Event createEvent(MultipartFile file, String title, String desc, String location, LocalDateTime startTime, LocalDateTime endTime, Set<Interest> category, Long organizerId ) {
+
+        String fileName = fileStorageService.storeFile(file);
+        String fileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").path(fileName).toUriString();
+
+        User organizer = userRepository.findById(organizerId).orElseThrow(() -> new AppException("User not exist."));
+
+        Event event = new Event();
+        event.setTitle(title);
+        event.setDescription(desc);
+        event.setLocation(location);
+        event.setStartTime(startTime);
+        event.setEndTime(endTime);
+        event.setCategory(category);
+        event.setOrganizer(organizer);
+        event.setImageName(fileName);
+        event.setImageUri(fileUri);
+
+        organizer.organizeNewEvent(event);
+
+        Event newEvent = eventRepository.save(event);
+
+        organizer.getAttendingEvents().add(newEvent);
+
+        userRepository.save(organizer);
+
+        return newEvent;
+    }
+    /**
+     * ========================================================
+     *  Update event image, needed in a stepper at creation
+     *  =======================================================
+     */
+    public void addEventImage(MultipartFile file, Long eventId) {
+
+        Event event = eventRepository.findById(eventId).orElseThrow(() -> new AppException("Event not set."));
+        String fileName = fileStorageService.storeFile(file);
+        String fileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").path(fileName).toUriString();
+
+        event.setImageName(fileName);
+        event.setImageUri(fileUri);
+
+        eventRepository.save(event);
     }
     /**
      *==========================================================

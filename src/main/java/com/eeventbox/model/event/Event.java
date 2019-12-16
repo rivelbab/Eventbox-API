@@ -16,13 +16,13 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
 @Entity
 @Table(name = "events")
 public class Event extends AuditModel {
@@ -34,6 +34,8 @@ public class Event extends AuditModel {
     private String location;
     private String title;
     private String description;
+    private String imageName;
+    private String imageUri;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
@@ -46,7 +48,9 @@ public class Event extends AuditModel {
     private User organizer;
 
     @Enumerated(EnumType.STRING)
-    private Interest category;
+    @ElementCollection(targetClass = Interest.class, fetch = FetchType.EAGER)
+    @JsonIgnore
+    private Set<Interest> category = new HashSet<>();
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnore

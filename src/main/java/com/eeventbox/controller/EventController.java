@@ -7,6 +7,7 @@ package com.eeventbox.controller;
  */
 import com.eeventbox.exception.AppException;
 import com.eeventbox.model.event.Event;
+import com.eeventbox.model.utility.Interest;
 import com.eeventbox.payload.event.EventRequest;
 import com.eeventbox.payload.event.EventResponse;
 import com.eeventbox.service.event.EventService;
@@ -15,15 +16,19 @@ import com.eeventbox.utils.mapper.EventMapper;
 import com.eeventbox.utils.web.PatchMediaType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.json.JsonMergePatch;
 import javax.validation.Valid;
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/v1/events")
@@ -46,16 +51,45 @@ public class EventController {
 		return ResponseEntity.ok(eventResponses);
 	}
 
-	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-	public 	ResponseEntity<Void> createEvent(@Valid @RequestBody EventRequest eventRequest) {
+	/*@PostMapping
+	public 	ResponseEntity<Void> createEvent(@RequestParam("file") MultipartFile file, @RequestParam("eventRequest") EventRequest eventRequest) {
 
-		Event eventCreated = eventService.createEvent(eventRequest);
+		Event eventCreated = eventService.createEvent(file, eventRequest);
 
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest()
 				.path("/{id}")
 				.buildAndExpand(eventCreated.getId())
 				.toUri();
 		return ResponseEntity.created(location).build();
+	}*/
+
+	@PostMapping
+	public 	ResponseEntity<Void> createEvent(
+			@RequestParam("file") MultipartFile file,
+			@RequestParam("title") String title,
+			@RequestParam("desc") String desc,
+			@RequestParam("location") String location,
+			@RequestParam("category")Set<Interest> category,
+			@RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime startTime,
+			@RequestParam("endTime") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)  LocalDateTime endTime,
+			@RequestParam("organizerId") Long organizerId
+			) {
+
+		Event eventCreated = eventService.createEvent(file, title, desc, location, startTime, endTime, category, organizerId);
+
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+				.path("/{id}")
+				.buildAndExpand(eventCreated.getId())
+				.toUri();
+		return ResponseEntity.created(uri).build();
+	}
+
+	@PostMapping(path = "/images/{eventId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<Void> addEventImage(@PathVariable Long eventId, @RequestParam("file") MultipartFile file) {
+
+		eventService.addEventImage(file, eventId);
+
+		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping(path = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)

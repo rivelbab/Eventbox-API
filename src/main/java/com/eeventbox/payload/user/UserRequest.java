@@ -13,7 +13,6 @@ import java.util.Set;
 
 @Getter
 @Setter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserRequest {
@@ -23,5 +22,8 @@ public class UserRequest {
 	private String firstName;
 	private String lastName;
 	private String birthday;
+	private String ufr;
+	private String sex;
+	private String phone;
 	private Set<Interest> interests;
 }
