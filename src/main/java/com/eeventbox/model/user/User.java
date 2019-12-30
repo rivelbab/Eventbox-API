@@ -42,6 +42,7 @@ public class User extends AuditModel {
 	@Email
 	@Column(name = "email")
 	private String email;
+	@JsonIgnore
 	@NotBlank
 	@Column(name = "password")
 	private String password;
@@ -51,6 +52,7 @@ public class User extends AuditModel {
 	private String firstName;
 	@Column(name = "last_name")
 	private String lastName;
+	@JsonIgnore
 	@Column(name = "birthday")
 	private String birthday;
 	@Column(name = "phone")
@@ -59,35 +61,41 @@ public class User extends AuditModel {
 	private int sex;
 
 	/* =========== Auth infos =========== */
+	@JsonIgnore
 	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
 	private VerificationToken verificationToken;
 
+	@JsonIgnore
 	@Column(name = "reset_token")
 	private String resetToken;
+	@JsonIgnore
 	@Column(name = "is_active")
 	private boolean isActive;
 
+	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY)
 	@JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<Role> roles = new HashSet<>();
 
 	/* =========== profile infos ========= */
+	@JsonIgnore
 	@Column(name = "avatar")
 	private String avatar;
 
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Set<Event> adminingEvents;
 
+	@JsonIgnore
 	@Enumerated(EnumType.STRING)
 	@ElementCollection(targetClass = Interest.class, fetch = FetchType.EAGER)
-	@JsonIgnore
 	private Set<Interest> interests = new HashSet<>();
 
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JsonIgnore
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private List<Event> attendingEvents;
 
+	@JsonIgnore
 	@OneToOne
 	@JoinTable(name = "time_setting")
 	private TimeSetting timeAvailability;

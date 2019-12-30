@@ -7,7 +7,6 @@ package com.eeventbox.service.event;
  */
 import com.eeventbox.model.event.Event;
 import com.eeventbox.model.utility.Interest;
-import com.eeventbox.payload.event.EventRequest;
 import com.eeventbox.payload.event.EventResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,8 +20,6 @@ public interface EventService {
     EventResponse findEvent(Long eventId);
 
     Optional<Event> findEventById(Long eventId);
-
-    Event createEvent(MultipartFile file, EventRequest eventRequest);
 
     Event createEvent(MultipartFile file, String title, String desc, String location, LocalDateTime startTime, LocalDateTime endTime, Set<Interest> category, Long organizerId );
 

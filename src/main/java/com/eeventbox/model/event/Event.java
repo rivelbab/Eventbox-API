@@ -33,6 +33,7 @@ public class Event extends AuditModel {
 
     private String location;
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String description;
     private String imageName;
     private String imageUri;

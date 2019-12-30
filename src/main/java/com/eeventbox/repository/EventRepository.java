@@ -1,6 +1,7 @@
 package com.eeventbox.repository;
 
 import com.eeventbox.model.event.Event;
+import com.eeventbox.model.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,4 +14,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Event findByTitle(String title);
 
     Optional<Event> findById(Long id);
+
+    Optional<List<Event>> findByOrganizer(User organizer);
 }

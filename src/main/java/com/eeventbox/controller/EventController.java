@@ -11,12 +11,17 @@ import com.eeventbox.model.utility.Interest;
 import com.eeventbox.payload.event.EventRequest;
 import com.eeventbox.payload.event.EventResponse;
 import com.eeventbox.service.event.EventService;
+import com.eeventbox.service.file.FileStorageService;
 import com.eeventbox.utils.helper.PatchHelper;
 import com.eeventbox.utils.mapper.EventMapper;
 import com.eeventbox.utils.web.PatchMediaType;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +29,8 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.json.JsonMergePatch;
-import javax.validation.Valid;
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,12 +43,16 @@ public class EventController {
 
 	@Autowired
 	private EventService eventService;
+	@Autowired
+	private FileStorageService fileStorageService;
 
 	private final EventMapper mapper;
 
 	private final PatchHelper patchHelper;
 
+	private static final Logger logger = LoggerFactory.getLogger(EventController.class);
 
+	//=========== ok ===========
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<EventResponse>> findEvents() {
 		List<Event> events = eventService.findEvents();
@@ -50,19 +60,7 @@ public class EventController {
 
 		return ResponseEntity.ok(eventResponses);
 	}
-
-	/*@PostMapping
-	public 	ResponseEntity<Void> createEvent(@RequestParam("file") MultipartFile file, @RequestParam("eventRequest") EventRequest eventRequest) {
-
-		Event eventCreated = eventService.createEvent(file, eventRequest);
-
-		URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-				.path("/{id}")
-				.buildAndExpand(eventCreated.getId())
-				.toUri();
-		return ResponseEntity.created(location).build();
-	}*/
-
+	//=========== ok ============
 	@PostMapping
 	public 	ResponseEntity<Void> createEvent(
 			@RequestParam("file") MultipartFile file,
@@ -83,22 +81,14 @@ public class EventController {
 				.toUri();
 		return ResponseEntity.created(uri).build();
 	}
-
-	@PostMapping(path = "/images/{eventId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<Void> addEventImage(@PathVariable Long eventId, @RequestParam("file") MultipartFile file) {
-
-		eventService.addEventImage(file, eventId);
-
-		return ResponseEntity.noContent().build();
-	}
-
+	//=========== ok ============
 	@GetMapping(path = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<EventResponse> findEventById(@PathVariable Long eventId) {
 
 		EventResponse eventResponse = eventService.findEvent(eventId);
 		return ResponseEntity.ok(eventResponse);
 	}
-
+	//========= to test ===========
 	@PatchMapping(path = "/eventId", consumes = PatchMediaType.APPLICATION_MERGE_PATCH_VALUE)
 	public ResponseEntity<Void> updateEvent(@PathVariable Long eventId, @RequestBody JsonMergePatch mergePatchDocument) {
 
@@ -110,7 +100,7 @@ public class EventController {
 
 		return ResponseEntity.noContent().build();
 	}
-
+	//============== partially ok =============
 	@GetMapping(path = "/past", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<EventResponse>> findPastEvents() {
 
@@ -119,7 +109,7 @@ public class EventController {
 
 		return ResponseEntity.ok(eventResponses);
 	}
-
+	//============= partially ok ==============
 	@GetMapping(path = "/future", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<EventResponse>> findFutureEvents() {
 
@@ -128,14 +118,14 @@ public class EventController {
 
 		return ResponseEntity.ok(eventResponses);
 	}
-
+	//=========== to test ===========
 	@PostMapping(path = "/{eventId}/join", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> joinEvent(@PathVariable Long eventId, @RequestBody Long userId) {
 		eventService.joinEvent(userId, eventId);
 
 		return ResponseEntity.noContent().build();
 	}
-
+	//========== to refactor ==========
 	@GetMapping(path = "/{userId}/matchs", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<EventResponse>> matchEvents(@PathVariable Long userId) {
 
@@ -144,7 +134,7 @@ public class EventController {
 
 		return  ResponseEntity.ok(eventResponses);
 	}
-
+	//============ ok ============
 	@GetMapping(path = "/{userId}/all", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<EventResponse>> findUserEvents(@PathVariable Long userId) {
 
@@ -153,7 +143,7 @@ public class EventController {
 
 		return  ResponseEntity.ok(eventResponses);
 	}
-
+	// ============= ok ============
 	@GetMapping(path = "/{userId}/future", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<EventResponse>> findUserFutureEvents(@PathVariable Long userId) {
 
@@ -162,7 +152,7 @@ public class EventController {
 
 		return  ResponseEntity.ok(eventResponses);
 	}
-
+	// =========== ok ==============
 	@GetMapping(path = "/{userId}/past", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<EventResponse>> findUserPastEvents(@PathVariable Long userId) {
 
@@ -170,5 +160,28 @@ public class EventController {
 		List<EventResponse> eventResponses = mapper.asEventResponse(events);
 
 		return  ResponseEntity.ok(eventResponses);
+	}
+	// ========= to test ============
+	@GetMapping("/images/{fileName:.+}")
+	public ResponseEntity<Resource> downloadFile(@PathVariable String fileName, HttpServletRequest request) {
+
+		Resource resource = fileStorageService.loadFileAsResource(fileName);
+
+		String contentType = null;
+
+		try {
+			contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+		} catch (IOException ex) {
+			logger.info("Could not determine file type.");
+		}
+
+		if(contentType == null) {
+			contentType = "application/octet-stream";
+		}
+
+		return ResponseEntity.ok()
+				.contentType(MediaType.parseMediaType(contentType))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+				.body(resource);
 	}
 }

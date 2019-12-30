@@ -13,9 +13,9 @@ import java.util.Set;
 public class EventRequest {
 	private String title;
 	private String description;
+	private String location;
+	private Set<Interest> category;
 	private LocalDateTime startTime;
 	private LocalDateTime endTime;
-	private Set<Interest> category;
 	private Long organizerId;
-	private String location;
 }

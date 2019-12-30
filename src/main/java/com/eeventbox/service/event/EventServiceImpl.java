@@ -4,16 +4,12 @@ import com.eeventbox.exception.AppException;
 import com.eeventbox.model.event.Comment;
 import com.eeventbox.model.event.Event;
 import com.eeventbox.model.user.User;
-import com.eeventbox.model.utility.Days;
 import com.eeventbox.model.utility.Interest;
-import com.eeventbox.payload.event.EventRequest;
 import com.eeventbox.payload.event.EventResponse;
 import com.eeventbox.repository.EventRepository;
 import com.eeventbox.repository.UserRepository;
 import com.eeventbox.service.comment.CommentService;
 import com.eeventbox.service.file.FileStorageService;
-import com.eeventbox.utils.converter.Period;
-import com.eeventbox.utils.converter.TimeSettingConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -68,39 +64,10 @@ public class EventServiceImpl implements EventService {
      * 				Create a new event
      *==========================================================
      */
-    public Event createEvent(MultipartFile file, EventRequest eventRequest) {
-
-        String fileName = fileStorageService.storeFile(file);
-        String fileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").path(fileName).toUriString();
-
-        User organizer = userRepository.findById(eventRequest.getOrganizerId()).orElseThrow(() -> new AppException("User not exist."));
-
-        Event event = new Event();
-        event.setTitle(eventRequest.getTitle());
-        event.setCategory(eventRequest.getCategory());
-        event.setDescription(eventRequest.getDescription());
-        event.setLocation(eventRequest.getLocation());
-        event.setStartTime(eventRequest.getStartTime());
-        event.setEndTime(eventRequest.getEndTime());
-        event.setOrganizer(organizer);
-        event.setImageName(fileName);
-        event.setImageUri(fileUri);
-
-        organizer.organizeNewEvent(event);
-
-        Event newEvent = eventRepository.save(event);
-
-        organizer.getAttendingEvents().add(newEvent);
-
-        userRepository.save(organizer);
-
-        return newEvent;
-    }
-
     public Event createEvent(MultipartFile file, String title, String desc, String location, LocalDateTime startTime, LocalDateTime endTime, Set<Interest> category, Long organizerId ) {
 
         String fileName = fileStorageService.storeFile(file);
-        String fileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/images/").path(fileName).toUriString();
+        String fileUri = ServletUriComponentsBuilder.fromCurrentContextPath().path("/v1/events/images/").path(fileName).toUriString();
 
         User organizer = userRepository.findById(organizerId).orElseThrow(() -> new AppException("User not exist."));
 
@@ -119,7 +86,9 @@ public class EventServiceImpl implements EventService {
 
         Event newEvent = eventRepository.save(event);
 
-        organizer.getAttendingEvents().add(newEvent);
+        if(!organizer.getAttendingEvents().contains(newEvent)){
+            organizer.getAttendingEvents().add(newEvent);
+        }
 
         userRepository.save(organizer);
 
@@ -224,13 +193,10 @@ public class EventServiceImpl implements EventService {
         Set<Interest> interests = user.getInterests();
         List<Event> futureEvents = findFutureEvents();
 
-        List<Period> periods = TimeSettingConverter.convertForTemplate(user.getTimeAvailability()).getPeriodsList();
-
-        return futureEvents.stream().filter(
-                event -> interests.contains(event.getCategory())).filter(e -> {
-            Period weekDay = periods.get(Days.valueOf(e.getEndTime().getDayOfWeek().name()).ordinal());
-            return e.getStartTime().toLocalTime().isAfter(weekDay.getStart()) && e.getEndTime().toLocalTime().isBefore(weekDay.getEnd());
-        }).collect(Collectors.toList());
+        return futureEvents.stream()
+                //.filter(event -> !Sets.intersection(event.getCategory(), interests).isEmpty()
+                .filter(event -> interests.stream().anyMatch(event.getCategory()::contains)
+        ).collect(Collectors.toList());
     }
 
     /**
@@ -242,7 +208,7 @@ public class EventServiceImpl implements EventService {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
 
-        return user.getAttendingEvents();
+        return eventRepository.findByOrganizer(user).orElseThrow(() -> new AppException("User not organize a event."));
     }
 
     /**
@@ -252,9 +218,9 @@ public class EventServiceImpl implements EventService {
      */
     public List<Event> findUserFutureEvents(Long userId) {
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
+        List<Event> userEvents = findUserEvents(userId);
 
-        return user.getAttendingEvents().stream().filter(event -> event.getEndTime().isAfter(LocalDateTime.now()))
+        return userEvents.stream().filter(event -> event.getEndTime().isAfter(LocalDateTime.now()))
                 .collect(Collectors.toList());
     }
     /**
@@ -264,9 +230,9 @@ public class EventServiceImpl implements EventService {
      */
     public List<Event> findUserPastEvents(Long userId) {
 
-        User user = userRepository.findById(userId).orElseThrow(() -> new AppException("User not exist."));
+        List<Event> userEvents = findUserEvents(userId);
 
-        return user.getAttendingEvents().stream().filter(event -> event.getEndTime().isBefore(LocalDateTime.now()))
+        return userEvents.stream().filter(event -> event.getEndTime().isBefore(LocalDateTime.now()))
                 .collect(Collectors.toList());
     }
 
